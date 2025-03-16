@@ -1,0 +1,82 @@
+[versions]
+agp = "8.9.0"
+kotlin = "2.1.10"
+ksp = "2.1.10-1.0.31"
+coreKtx = "1.15.0"
+junit = "4.13.2"
+junitVersion = "1.2.1"
+espressoCore = "3.6.1"
+lifecycleRuntimeKtx = "2.8.7"
+activityCompose = "1.10.1"
+composeBom = "2025.03.00"
+material-icons-extended = "1.7.8"
+
+# CameraX
+camerax = "1.4.1"
+
+# Room Database
+room = "2.6.1"
+
+# Work Manager
+workManager = "2.10.0"
+
+# Koin Dependency Injection
+koin = "4.0.2"
+
+# Coil Image Loading
+coil = "3.1.0"
+
+# Coroutines
+coroutines = "1.10.1"
+
+[libraries]
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
+androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
+androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
+androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
+androidx-ui = { group = "androidx.compose.ui", name = "ui" }
+androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
+androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
+androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
+androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
+androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
+androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
+
+# CameraX
+androidx-camerax-core = { module = "androidx.camera:camera-core", version.ref = "camerax" }
+androidx-camerax-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "camerax" }
+androidx-camerax-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "camerax" }
+androidx-camerax-view = { module = "androidx.camera:camera-view", version.ref = "camerax" }
+
+# Room Database
+androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
+androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" } # Kotlin Extensions and Coroutines support for Room
+androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" } # Kotlin Symbol Processing (KSP) support
+
+# WorkManager (For daily reminders)
+androidx-work-runtime = { module = "androidx.work:work-runtime-ktx", version.ref = "workManager" }
+
+# Koin (Dependency Injection)
+koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
+koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
+koin-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koin" }
+
+# Image Processing & Loading
+coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
+
+# Coroutines & Flow
+coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
+coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
+
+# Extended Material Icons
+androidx-compose-material-extended = {  group = "androidx.compose.material", name = "material-icons-extended", version.ref = "material-icons-extended" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+kotlin-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+
