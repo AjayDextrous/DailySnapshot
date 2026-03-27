@@ -5,68 +5,39 @@ package com.example.dailysnapshot
  * Provides a minimal navigation scaffold for manual testing.
  */
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import com.example.dailysnapshot.ui.camera.CameraScreen
 import com.example.dailysnapshot.ui.edit.EditScreen
+import com.example.dailysnapshot.ui.gallery.GalleryScreen
 
 @Composable
 fun DebugNavHost() {
-    var currentScreen by remember { mutableStateOf<DebugScreen>(DebugScreen.Home) }
+    var currentScreen by remember { mutableStateOf<DebugScreen>(DebugScreen.Gallery) }
 
     when (val screen = currentScreen) {
-        DebugScreen.Home -> DebugHomeScreen(
-            onOpenCamera = { currentScreen = DebugScreen.Camera }
+        DebugScreen.Gallery -> GalleryScreen(
+            onOpenCamera = { currentScreen = DebugScreen.Camera },
+            onOpenDetail = { /* DAI-14 */ },
+            onOpenSettings = { /* DAI-20 */ }
         )
         DebugScreen.Camera -> CameraScreen(
             onPhotoCaptured = { path -> currentScreen = DebugScreen.Edit(path) },
-            onClose = { currentScreen = DebugScreen.Home }
+            onClose = { currentScreen = DebugScreen.Gallery }
         )
         is DebugScreen.Edit -> EditScreen(
             rawFilePath = screen.rawFilePath,
-            onSaved = { currentScreen = DebugScreen.Home },
-            onNavigateBack = { currentScreen = DebugScreen.Home }
+            onSaved = { currentScreen = DebugScreen.Gallery },
+            onNavigateBack = { currentScreen = DebugScreen.Gallery }
         )
-    }
-}
-
-@Composable
-private fun DebugHomeScreen(onOpenCamera: () -> Unit) {
-    Surface(modifier = Modifier.fillMaxSize()) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Text("Daily Snapshot — Debug", style = MaterialTheme.typography.titleLarge)
-            Spacer(modifier = Modifier.height(32.dp))
-            Button(onClick = onOpenCamera) {
-                Text("Open Camera (DAI-10)")
-            }
-        }
     }
 }
 
 private sealed class DebugScreen {
-    object Home : DebugScreen()
+    object Gallery : DebugScreen()
     object Camera : DebugScreen()
     data class Edit(val rawFilePath: String) : DebugScreen()
 }

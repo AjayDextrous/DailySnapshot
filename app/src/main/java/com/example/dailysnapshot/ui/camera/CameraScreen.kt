@@ -69,6 +69,10 @@ fun CameraScreen(
 ) {
     val context = LocalContext.current
 
+    // Reset stale PostCapture state from a previous session (ViewModel outlives the screen
+    // in the debug nav host; DAI-15 nav will scope the ViewModel to the back stack entry).
+    LaunchedEffect(Unit) { viewModel.resetToActive() }
+
     var permissionState by remember {
         mutableStateOf(
             if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)

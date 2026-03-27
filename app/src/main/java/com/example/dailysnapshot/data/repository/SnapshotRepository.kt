@@ -11,6 +11,7 @@ import com.example.dailysnapshot.data.model.toEntity
 import com.example.dailysnapshot.util.ImageProcessor
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import java.io.File
 import java.util.UUID
@@ -128,6 +129,18 @@ class SnapshotRepository @Inject constructor(
 
     suspend fun getSnapshotById(id: Long): Snapshot? =
         dao.getById(id)?.toDomain()
+
+    /** Debug only — deletes all DB rows and their associated image files. */
+    suspend fun deleteAllSnapshots() {
+        dao.getAllSnapshots()
+            .map { it.map(SnapshotEntity::toDomain) }
+            .first()
+            .forEach { snapshot ->
+                File(snapshot.imagePath).delete()
+                snapshot.rawImagePath?.let { File(it).delete() }
+            }
+        dao.deleteAll()
+    }
 
     suspend fun deleteSnapshot(snapshot: Snapshot) {
         File(snapshot.imagePath).delete()

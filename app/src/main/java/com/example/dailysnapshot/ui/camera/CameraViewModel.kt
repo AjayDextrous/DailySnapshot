@@ -47,6 +47,11 @@ class CameraViewModel @Inject constructor(
     private val _uiEvents = Channel<UiEvent>(Channel.BUFFERED)
     val uiEvents = _uiEvents.receiveAsFlow()
 
+    /** Resets to Active state on screen entry, clearing any stale PostCapture state. */
+    fun resetToActive() {
+        _uiState.update { it.copy(cameraState = CameraState.Active) }
+    }
+
     fun toggleCamera() {
         _uiState.update {
             it.copy(

@@ -107,14 +107,17 @@ class EditViewModel @Inject constructor(
 
     private var rawFilePath: String = ""
     private var snapshotId: Long? = null
-    private var initialized = false
 
-    /** Called from the Composable once nav args are known. Idempotent. */
+    /**
+     * Called from the Composable once nav args are known.
+     * Idempotent for the same [rawFilePath] + [snapshotId]; performs a full state reset
+     * and reload when called with different args (e.g. returning to EditScreen for a new photo).
+     */
     fun initialize(rawFilePath: String, snapshotId: Long? = null) {
-        if (initialized) return
-        initialized = true
+        if (this.rawFilePath == rawFilePath && this.snapshotId == snapshotId) return
         this.rawFilePath = rawFilePath
         this.snapshotId = snapshotId
+        _uiState.update { UiState() }   // clear caption, filter, bitmaps, isSaving
         viewModelScope.launch {
             loadBitmapAndThumbnails()
             if (snapshotId != null) loadExistingSnapshot(snapshotId)

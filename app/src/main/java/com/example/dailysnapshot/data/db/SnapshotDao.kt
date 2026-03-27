@@ -28,6 +28,9 @@ interface SnapshotDao {
     @Query("SELECT * FROM snapshot_entries WHERE id = :id")
     suspend fun getById(id: Long): SnapshotEntity?
 
+    @Query("DELETE FROM snapshot_entries")
+    suspend fun deleteAll()
+
     @Insert
     suspend fun insert(entry: SnapshotEntity): Long
 
