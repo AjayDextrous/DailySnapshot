@@ -25,6 +25,9 @@ interface SnapshotDao {
     @Query("SELECT DISTINCT date FROM snapshot_entries")
     fun getAllDatesWithEntries(): Flow<List<String>>
 
+    @Query("SELECT * FROM snapshot_entries WHERE id = :id")
+    suspend fun getById(id: Long): SnapshotEntity?
+
     @Insert
     suspend fun insert(entry: SnapshotEntity): Long
 
