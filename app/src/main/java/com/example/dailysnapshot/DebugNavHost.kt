@@ -5,7 +5,6 @@ package com.example.dailysnapshot
  * Provides a minimal navigation scaffold for manual testing.
  */
 
-import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -23,37 +22,32 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.dailysnapshot.ui.camera.CameraScreen
+import com.example.dailysnapshot.ui.edit.EditScreen
 
 @Composable
 fun DebugNavHost() {
-    val context = LocalContext.current
     var currentScreen by remember { mutableStateOf<DebugScreen>(DebugScreen.Home) }
-    var lastCapturedPath by remember { mutableStateOf<String?>(null) }
 
-    when (currentScreen) {
+    when (val screen = currentScreen) {
         DebugScreen.Home -> DebugHomeScreen(
-            lastCapturedPath = lastCapturedPath,
             onOpenCamera = { currentScreen = DebugScreen.Camera }
         )
         DebugScreen.Camera -> CameraScreen(
-            onPhotoCaptured = { path ->
-                lastCapturedPath = path
-                currentScreen = DebugScreen.Home
-                Toast.makeText(context, "Captured: $path", Toast.LENGTH_SHORT).show()
-            },
+            onPhotoCaptured = { path -> currentScreen = DebugScreen.Edit(path) },
             onClose = { currentScreen = DebugScreen.Home }
+        )
+        is DebugScreen.Edit -> EditScreen(
+            rawFilePath = screen.rawFilePath,
+            onSaved = { currentScreen = DebugScreen.Home },
+            onNavigateBack = { currentScreen = DebugScreen.Home }
         )
     }
 }
 
 @Composable
-private fun DebugHomeScreen(
-    lastCapturedPath: String?,
-    onOpenCamera: () -> Unit
-) {
+private fun DebugHomeScreen(onOpenCamera: () -> Unit) {
     Surface(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
@@ -67,13 +61,6 @@ private fun DebugHomeScreen(
             Button(onClick = onOpenCamera) {
                 Text("Open Camera (DAI-10)")
             }
-            if (lastCapturedPath != null) {
-                Spacer(modifier = Modifier.height(24.dp))
-                Text(
-                    text = "Last capture:\n$lastCapturedPath",
-                    style = MaterialTheme.typography.bodySmall
-                )
-            }
         }
     }
 }
@@ -81,4 +68,5 @@ private fun DebugHomeScreen(
 private sealed class DebugScreen {
     object Home : DebugScreen()
     object Camera : DebugScreen()
+    data class Edit(val rawFilePath: String) : DebugScreen()
 }

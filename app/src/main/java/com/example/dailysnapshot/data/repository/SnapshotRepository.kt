@@ -106,6 +106,9 @@ class SnapshotRepository @Inject constructor(
         // TODO DAI-33: GlanceAppWidgetManager.getInstance(context).updateAll(SnapshotWidget())
     }
 
+    suspend fun getSnapshotById(id: Long): Snapshot? =
+        dao.getById(id)?.toDomain()
+
     suspend fun deleteSnapshot(snapshot: Snapshot) {
         File(snapshot.imagePath).delete()
         snapshot.rawImagePath?.let { File(it).delete() }
