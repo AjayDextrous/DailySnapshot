@@ -2,11 +2,13 @@ package com.example.dailysnapshot.data.repository
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import com.example.dailysnapshot.data.db.SnapshotDao
 import com.example.dailysnapshot.data.db.SnapshotEntity
 import com.example.dailysnapshot.data.model.Snapshot
 import com.example.dailysnapshot.data.model.toDomain
 import com.example.dailysnapshot.data.model.toEntity
+import com.example.dailysnapshot.util.ImageProcessor
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -18,6 +20,7 @@ import javax.inject.Singleton
 @Singleton
 class SnapshotRepository @Inject constructor(
     private val dao: SnapshotDao,
+    private val imageProcessor: ImageProcessor,
     @ApplicationContext private val context: Context
 ) {
 
@@ -42,28 +45,26 @@ class SnapshotRepository @Inject constructor(
         filter: String?,
         date: String
     ): Snapshot {
-        val rawUuid = UUID.randomUUID().toString()
+        val rawUuid    = UUID.randomUUID().toString()
         val framedUuid = UUID.randomUUID().toString()
 
-        val rawFile = rawFile(rawUuid)
+        val rawFile    = rawFile(rawUuid)
         val framedFile = framedFile(framedUuid)
 
         rawFile.parentFile?.mkdirs()
         rawFile.outputStream().use { rawBitmap.compress(Bitmap.CompressFormat.JPEG, 95, it) }
 
-        // TODO DAI-12: replace with ImageProcessor.compositePolaroid(rawBitmap, caption, filter, framedFile)
-        framedFile.parentFile?.mkdirs()
-        framedFile.outputStream().use { rawBitmap.compress(Bitmap.CompressFormat.JPEG, 95, it) }
+        imageProcessor.compositePolaroid(rawBitmap, caption, filter, framedFile)
 
         val now = System.currentTimeMillis()
         val entity = SnapshotEntity(
-            date = date,
-            imagePath = framedFile.absolutePath,
-            rawImagePath = rawFile.absolutePath,
-            caption = caption,
+            date          = date,
+            imagePath     = framedFile.absolutePath,
+            rawImagePath  = rawFile.absolutePath,
+            caption       = caption,
             filterApplied = filter,
-            createdAt = now,
-            updatedAt = now
+            createdAt     = now,
+            updatedAt     = now
         )
         val id = dao.insert(entity)
 
@@ -72,19 +73,27 @@ class SnapshotRepository @Inject constructor(
         return entity.copy(id = id).toDomain()
     }
 
+    /**
+     * Updates an existing snapshot's caption, filter, and optionally its raw photo.
+     *
+     * [caption] and [filter] always reflect the user's current intent:
+     *  - [filter] = null means no filter (not "leave unchanged").
+     *
+     * The framed image is regenerated whenever any of these values change.
+     */
     suspend fun updateSnapshot(
         id: Long,
-        caption: String? = null,
-        filter: String? = null,
+        caption: String,
+        filter: String?,
         newRawBitmap: Bitmap? = null
     ) {
         val entity = dao.getById(id) ?: return
         val now = System.currentTimeMillis()
 
+        // Persist new raw file if the photo was replaced
         val updatedRawPath = if (newRawBitmap != null) {
             entity.rawImagePath?.let { File(it).delete() }
-            val rawUuid = UUID.randomUUID().toString()
-            val rawFile = rawFile(rawUuid)
+            val rawFile = rawFile(UUID.randomUUID().toString())
             rawFile.parentFile?.mkdirs()
             rawFile.outputStream().use { newRawBitmap.compress(Bitmap.CompressFormat.JPEG, 95, it) }
             rawFile.absolutePath
@@ -92,14 +101,25 @@ class SnapshotRepository @Inject constructor(
             entity.rawImagePath
         }
 
-        // TODO DAI-12: regenerate framed image via ImageProcessor when caption/filter/photo changes
+        // Regenerate framed image in-place (overwrite existing imagePath)
+        val sourceBitmap = newRawBitmap
+            ?: updatedRawPath?.let { BitmapFactory.decodeFile(it) }
+        if (sourceBitmap != null) {
+            imageProcessor.compositePolaroid(
+                rawBitmap  = sourceBitmap,
+                caption    = caption,
+                filterId   = filter,
+                outputFile = File(entity.imagePath)
+            )
+            if (sourceBitmap !== newRawBitmap) sourceBitmap.recycle()
+        }
 
         dao.update(
             entity.copy(
-                rawImagePath = updatedRawPath,
-                caption = caption ?: entity.caption,
-                filterApplied = filter ?: entity.filterApplied,
-                updatedAt = now
+                rawImagePath  = updatedRawPath,
+                caption       = caption,
+                filterApplied = filter,
+                updatedAt     = now
             )
         )
 

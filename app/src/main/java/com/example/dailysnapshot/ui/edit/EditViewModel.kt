@@ -6,7 +6,7 @@ import android.graphics.BitmapFactory
 import android.graphics.ColorMatrixColorFilter
 import android.graphics.Matrix
 import android.graphics.Paint
-import android.media.ExifInterface
+import androidx.exifinterface.media.ExifInterface
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.dailysnapshot.data.repository.SnapshotRepository
@@ -25,6 +25,8 @@ import java.io.File
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
+import androidx.core.graphics.scale
+import androidx.core.graphics.createBitmap
 
 @HiltViewModel
 class EditViewModel @Inject constructor(
@@ -130,7 +132,7 @@ class EditViewModel @Inject constructor(
         val bitmap = correctExifOrientation(rawFilePath, raw)
 
         val thumbSize = 80
-        val thumb = Bitmap.createScaledBitmap(bitmap, thumbSize, thumbSize, true)
+        val thumb = bitmap.scale(thumbSize, thumbSize)
         val thumbnails = FilterId.entries.associate { filter ->
             filter.id to applyAndroidFilter(thumb, filter)
         }
@@ -139,7 +141,7 @@ class EditViewModel @Inject constructor(
     }
 
     private fun applyAndroidFilter(src: Bitmap, filter: FilterId): Bitmap {
-        val result = Bitmap.createBitmap(src.width, src.height, src.config ?: Bitmap.Config.ARGB_8888)
+        val result = createBitmap(src.width, src.height, src.config ?: Bitmap.Config.ARGB_8888)
         val canvas = android.graphics.Canvas(result)
         val paint = Paint().apply {
             val m = filter.matrixValues()
@@ -213,24 +215,26 @@ class EditViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val today = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE)
-                val filterId = state.selectedFilter.id.takeIf { it != "none" }
+                // Pass null for "no filter" (repository/ImageProcessor treat null and "none" identically,
+                // but null is the canonical DB representation for filterApplied = none).
+                val filterId = state.selectedFilter.id.takeUnless { it == FilterId.NONE.id }
                 if (snapshotId != null) {
                     repository.updateSnapshot(
-                        id = snapshotId!!,
+                        id      = snapshotId!!,
                         caption = state.caption,
-                        filter = filterId
+                        filter  = filterId
                     )
                     _uiEvents.send(UiEvent.NavigateBack)
                 } else {
                     // Reload full-res bitmap for saving; apply EXIF correction as on preview load
                     val raw = BitmapFactory.decodeFile(rawFilePath)
                     val saveBitmap = if (raw != null) correctExifOrientation(rawFilePath, raw)
-                                     else state.previewBitmap!!
+                                     else state.previewBitmap
                     repository.saveSnapshot(
                         rawBitmap = saveBitmap,
-                        caption = state.caption,
-                        filter = filterId,
-                        date = today
+                        caption   = state.caption,
+                        filter    = filterId,
+                        date      = today
                     )
                     _uiEvents.send(UiEvent.NavigateToGallery)
                 }
