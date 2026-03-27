@@ -26,8 +26,14 @@ class CameraViewModel @Inject constructor(
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
+    sealed class CameraState {
+        object Active : CameraState()
+        data class PostCapture(val rawFilePath: String) : CameraState()
+    }
+
     data class UiState(
-        val lensFacing: Int = CameraSelector.LENS_FACING_BACK
+        val lensFacing: Int = CameraSelector.LENS_FACING_BACK,
+        val cameraState: CameraState = CameraState.Active
     )
 
     sealed class UiEvent {
@@ -62,9 +68,7 @@ class CameraViewModel @Inject constructor(
             executor,
             object : ImageCapture.OnImageSavedCallback {
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                    viewModelScope.launch {
-                        _uiEvents.send(UiEvent.PhotoCaptured(outputFile.absolutePath))
-                    }
+                    _uiState.update { it.copy(cameraState = CameraState.PostCapture(outputFile.absolutePath)) }
                 }
 
                 override fun onError(exception: ImageCaptureException) {
@@ -74,5 +78,20 @@ class CameraViewModel @Inject constructor(
                 }
             }
         )
+    }
+
+    /** User confirmed the captured photo — navigate to Edit screen. */
+    fun confirmCapture() {
+        val state = _uiState.value.cameraState as? CameraState.PostCapture ?: return
+        viewModelScope.launch {
+            _uiEvents.send(UiEvent.PhotoCaptured(state.rawFilePath))
+        }
+    }
+
+    /** User chose to retake — discard the captured file and return to live preview. */
+    fun retakePhoto() {
+        val state = _uiState.value.cameraState as? CameraState.PostCapture ?: return
+        File(state.rawFilePath).delete()
+        _uiState.update { it.copy(cameraState = CameraState.Active) }
     }
 }
