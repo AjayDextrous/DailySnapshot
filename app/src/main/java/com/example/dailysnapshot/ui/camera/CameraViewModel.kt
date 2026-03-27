@@ -1,0 +1,78 @@
+package com.example.dailysnapshot.ui.camera
+
+import android.content.Context
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
+import androidx.camera.view.LifecycleCameraController
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import java.io.File
+import java.util.UUID
+import java.util.concurrent.Executor
+import javax.inject.Inject
+
+@HiltViewModel
+class CameraViewModel @Inject constructor(
+    @ApplicationContext private val context: Context
+) : ViewModel() {
+
+    data class UiState(
+        val lensFacing: Int = CameraSelector.LENS_FACING_BACK
+    )
+
+    sealed class UiEvent {
+        data class PhotoCaptured(val rawFilePath: String) : UiEvent()
+        data class Error(val message: String) : UiEvent()
+    }
+
+    private val _uiState = MutableStateFlow(UiState())
+    val uiState: StateFlow<UiState> = _uiState.asStateFlow()
+
+    private val _uiEvents = Channel<UiEvent>(Channel.BUFFERED)
+    val uiEvents = _uiEvents.receiveAsFlow()
+
+    fun toggleCamera() {
+        _uiState.update {
+            it.copy(
+                lensFacing = if (it.lensFacing == CameraSelector.LENS_FACING_BACK)
+                    CameraSelector.LENS_FACING_FRONT
+                else
+                    CameraSelector.LENS_FACING_BACK
+            )
+        }
+    }
+
+    fun capturePhoto(controller: LifecycleCameraController, executor: Executor) {
+        val outputFile = File(context.filesDir, "snapshots/raw/${UUID.randomUUID()}.jpg")
+            .also { it.parentFile?.mkdirs() }
+        val outputOptions = ImageCapture.OutputFileOptions.Builder(outputFile).build()
+
+        controller.takePicture(
+            outputOptions,
+            executor,
+            object : ImageCapture.OnImageSavedCallback {
+                override fun onImageSaved(output: ImageCapture.OutputFileResults) {
+                    viewModelScope.launch {
+                        _uiEvents.send(UiEvent.PhotoCaptured(outputFile.absolutePath))
+                    }
+                }
+
+                override fun onError(exception: ImageCaptureException) {
+                    viewModelScope.launch {
+                        _uiEvents.send(UiEvent.Error(exception.message ?: "Capture failed"))
+                    }
+                }
+            }
+        )
+    }
+}
