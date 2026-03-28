@@ -2,6 +2,7 @@ package com.example.dailysnapshot.util
 
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import androidx.core.graphics.createBitmap
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
 import android.graphics.Paint
@@ -49,7 +50,7 @@ class ImageProcessor @Inject constructor() {
         val frameW = photoW + 2 * sideMargin
         val frameH = photoH + sideMargin + bottomMargin   // top margin equals sideMargin
 
-        val frameBitmap = Bitmap.createBitmap(frameW, frameH, Bitmap.Config.ARGB_8888)
+        val frameBitmap = createBitmap(frameW, frameH, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(frameBitmap)
 
         // White Polaroid background

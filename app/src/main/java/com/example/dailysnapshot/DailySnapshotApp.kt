@@ -3,7 +3,6 @@ package com.example.dailysnapshot
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.os.Build
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import com.example.dailysnapshot.data.repository.SettingsRepository
@@ -32,15 +31,13 @@ class DailySnapshotApp : Application(), Configuration.Provider {
             .build()
 
     private fun createNotificationChannels() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                CHANNEL_DAILY_REMINDER,
-                "Daily Reminder",
-                NotificationManager.IMPORTANCE_DEFAULT
-            )
-            getSystemService(NotificationManager::class.java)
-                .createNotificationChannel(channel)
-        }
+        val channel = NotificationChannel(
+            CHANNEL_DAILY_REMINDER,
+            "Daily Reminder",
+            NotificationManager.IMPORTANCE_DEFAULT
+        )
+        getSystemService(NotificationManager::class.java)
+            .createNotificationChannel(channel)
     }
 
     /** Re-enqueues the reminder after device restart (WorkManager persists work but safe to re-enqueue with UPDATE). */
