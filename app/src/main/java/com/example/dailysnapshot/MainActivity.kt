@@ -14,8 +14,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             DailySnapshotTheme {
-                // TODO DAI-15: replace DebugNavHost with AppNavGraph
-                DebugNavHost()
+                AppNavGraph()
             }
         }
     }
