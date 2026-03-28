@@ -1,22 +1,30 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.kotlin.ksp)
+    alias(libs.plugins.hilt)
 }
 
 android {
     namespace = "com.example.dailysnapshot"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.dailysnapshot"
-        minSdk = 27
-        targetSdk = 35
+        minSdk = 29
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        ksp {
+            arg("room.schemaLocation", "$projectDir/schemas")
+        }
     }
 
     buildTypes {
@@ -32,8 +40,10 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-    kotlinOptions {
-        jvmTarget = "11"
+    kotlin {
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_11)
+        }
     }
     buildFeatures {
         compose = true
@@ -50,6 +60,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.exifinterface)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -72,10 +83,12 @@ dependencies {
     // WorkManager (For daily reminders)
     implementation(libs.androidx.work.runtime)
 
-    // Koin (Dependency Injection)
-    implementation(libs.koin.core)
-    implementation(libs.koin.android)
-    implementation(libs.koin.compose)
+    // Hilt Dependency Injection
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
+    implementation(libs.hilt.navigation.compose)
+    implementation(libs.hilt.work)
+    ksp(libs.hilt.ext.compiler)
 
     // Image Processing & Loading
     implementation(libs.coil.compose)
@@ -86,4 +99,23 @@ dependencies {
 
     // Material Icons Extended
     implementation(libs.androidx.compose.material.extended)
+
+    // Navigation Compose
+    implementation(libs.androidx.navigation.compose)
+
+    // DataStore Preferences
+    implementation(libs.androidx.datastore.preferences)
+
+    // Unit tests
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.mockk)
+    testImplementation(libs.turbine)
+    testImplementation(libs.androidx.arch.core.testing)
+
+    // Instrumented tests
+    androidTestImplementation(libs.kotlinx.coroutines.test)
+    androidTestImplementation(libs.mockk.android)
+    androidTestImplementation(libs.turbine)
+    androidTestImplementation(libs.androidx.room.testing)
+    androidTestImplementation(libs.androidx.arch.core.testing)
 }

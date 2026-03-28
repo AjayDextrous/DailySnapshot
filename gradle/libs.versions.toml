@@ -1,33 +1,46 @@
 [versions]
-agp = "8.9.0"
-kotlin = "2.1.10"
-ksp = "2.1.10-1.0.31"
-coreKtx = "1.15.0"
+agp = "8.13.2"
+kotlin = "2.3.20"
+ksp = "2.3.6"
+coreKtx = "1.18.0"
 junit = "4.13.2"
-junitVersion = "1.2.1"
-espressoCore = "3.6.1"
-lifecycleRuntimeKtx = "2.8.7"
-activityCompose = "1.10.1"
-composeBom = "2025.03.00"
+junitVersion = "1.3.0"
+espressoCore = "3.7.0"
+lifecycleRuntimeKtx = "2.10.0"
+activityCompose = "1.13.0"
+composeBom = "2026.03.01"
 material-icons-extended = "1.7.8"
 
 # CameraX
-camerax = "1.4.1"
+camerax = "1.6.0"
 
 # Room Database
-room = "2.6.1"
+room = "2.8.4"
 
 # Work Manager
-workManager = "2.10.0"
+workManager = "2.11.2"
 
-# Koin Dependency Injection
-koin = "4.0.2"
+# Hilt Dependency Injection
+hilt = "2.58"
+hiltExt = "1.2.0"
 
 # Coil Image Loading
-coil = "3.1.0"
+coil = "3.4.0"
 
 # Coroutines
-coroutines = "1.10.1"
+coroutines = "1.10.2"
+
+# Navigation Compose
+navigationCompose = "2.9.7"
+
+# DataStore
+datastore = "1.2.1"
+exifinterface = "1.3.6"
+
+# Testing
+mockk = "1.14.0"
+turbine = "1.2.0"
+archCoreTesting = "2.2.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -59,10 +72,12 @@ androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref =
 # WorkManager (For daily reminders)
 androidx-work-runtime = { module = "androidx.work:work-runtime-ktx", version.ref = "workManager" }
 
-# Koin (Dependency Injection)
-koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
-koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
-koin-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koin" }
+# Hilt Dependency Injection
+hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }
+hilt-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hilt" }
+hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltExt" }
+hilt-work = { module = "androidx.hilt:hilt-work", version.ref = "hiltExt" }
+hilt-ext-compiler = { module = "androidx.hilt:hilt-compiler", version.ref = "hiltExt" }
 
 # Image Processing & Loading
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
@@ -71,12 +86,29 @@ coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" 
 coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
 coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
 
+# Navigation Compose
+androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
+
+# DataStore Preferences
+androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
+
 # Extended Material Icons
 androidx-compose-material-extended = {  group = "androidx.compose.material", name = "material-icons-extended", version.ref = "material-icons-extended" }
+androidx-exifinterface = { group = "androidx.exifinterface", name = "exifinterface", version.ref = "exifinterface" }
+
+# Testing
+kotlinx-coroutines-test    = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
+mockk                      = { module = "io.mockk:mockk", version.ref = "mockk" }
+mockk-android              = { module = "io.mockk:mockk-android", version.ref = "mockk" }
+turbine                    = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
+androidx-arch-core-testing = { module = "androidx.arch.core:core-testing", version.ref = "archCoreTesting" }
+androidx-room-testing      = { module = "androidx.room:room-testing", version.ref = "room" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 kotlin-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 
