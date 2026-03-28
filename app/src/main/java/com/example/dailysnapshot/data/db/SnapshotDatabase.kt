@@ -6,7 +6,7 @@ import androidx.room.RoomDatabase
 @Database(
     entities = [SnapshotEntity::class],
     version = 1,
-    exportSchema = false
+    exportSchema = true
 )
 abstract class SnapshotDatabase : RoomDatabase() {
     abstract fun snapshotDao(): SnapshotDao

@@ -1,6 +1,7 @@
 package com.example.dailysnapshot.ui.camera
 
 import android.content.Context
+import androidx.annotation.VisibleForTesting
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
@@ -91,6 +92,12 @@ class CameraViewModel @Inject constructor(
         viewModelScope.launch {
             _uiEvents.send(UiEvent.PhotoCaptured(state.rawFilePath))
         }
+    }
+
+    /** Test-only: drives the ViewModel into PostCapture state without a real camera controller. */
+    @VisibleForTesting
+    internal fun setPostCaptureState(path: String) {
+        _uiState.update { it.copy(cameraState = CameraState.PostCapture(path)) }
     }
 
     /** User chose to retake — discard the captured file and return to live preview. */
