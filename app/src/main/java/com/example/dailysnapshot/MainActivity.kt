@@ -26,8 +26,8 @@ class MainActivity : ComponentActivity() {
                     ActivityResultContracts.RequestPermission()
                 ) { granted -> mainViewModel.onPermissionResult(granted) }
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    LaunchedEffect(Unit) {
+                LaunchedEffect(Unit) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                         mainViewModel.requestPermission.collect {
                             permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                         }

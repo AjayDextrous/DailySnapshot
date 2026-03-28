@@ -10,9 +10,11 @@ import com.example.dailysnapshot.data.model.toDomain
 import com.example.dailysnapshot.data.model.toEntity
 import com.example.dailysnapshot.util.ImageProcessor
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.UUID
 import javax.inject.Inject
@@ -45,7 +47,7 @@ class SnapshotRepository @Inject constructor(
         caption: String,
         filter: String?,
         date: String
-    ): Snapshot {
+    ): Snapshot = withContext(Dispatchers.IO) {
         val rawUuid    = UUID.randomUUID().toString()
         val framedUuid = UUID.randomUUID().toString()
 
@@ -71,7 +73,7 @@ class SnapshotRepository @Inject constructor(
 
         // TODO DAI-33: GlanceAppWidgetManager.getInstance(context).updateAll(SnapshotWidget())
 
-        return entity.copy(id = id).toDomain()
+        entity.copy(id = id).toDomain()
     }
 
     /**
@@ -87,8 +89,8 @@ class SnapshotRepository @Inject constructor(
         caption: String,
         filter: String?,
         newRawBitmap: Bitmap? = null
-    ) {
-        val entity = dao.getById(id) ?: return
+    ) = withContext(Dispatchers.IO) {
+        val entity = dao.getById(id) ?: return@withContext
         val now = System.currentTimeMillis()
 
         // Persist new raw file if the photo was replaced

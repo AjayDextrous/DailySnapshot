@@ -51,36 +51,39 @@ class ImageProcessor @Inject constructor() {
         val frameH = photoH + sideMargin + bottomMargin   // top margin equals sideMargin
 
         val frameBitmap = createBitmap(frameW, frameH, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(frameBitmap)
+        try {
+            val canvas = Canvas(frameBitmap)
 
-        // White Polaroid background
-        canvas.drawColor(android.graphics.Color.WHITE)
+            // White Polaroid background
+            canvas.drawColor(android.graphics.Color.WHITE)
 
-        // Photo with optional ColorMatrix filter
-        val photoPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            val matrix = colorMatrix(filterId)
-            if (matrix != null) colorFilter = ColorMatrixColorFilter(matrix)
-        }
-        val srcRect = Rect(0, 0, photoW, photoH)
-        val dstRect = Rect(sideMargin, sideMargin, sideMargin + photoW, sideMargin + photoH)
-        canvas.drawBitmap(rawBitmap, srcRect, dstRect, photoPaint)
-
-        // Caption text centred in the bottom margin
-        if (caption.isNotEmpty()) {
-            val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                color = android.graphics.Color.BLACK
-                textSize = frameW * CAPTION_TEXT_SIZE_RATIO
-                textAlign = Paint.Align.CENTER
-                typeface = Typeface.MONOSPACE   // TODO DAI-22: custom font
+            // Photo with optional ColorMatrix filter
+            val photoPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                val matrix = colorMatrix(filterId)
+                if (matrix != null) colorFilter = ColorMatrixColorFilter(matrix)
             }
-            // Baseline y: centre of the bottom margin, shifted up by half the cap-height
-            val captionY = (sideMargin + photoH) + bottomMargin / 2f + textPaint.textSize * 0.35f
-            canvas.drawText(caption, frameW / 2f, captionY, textPaint)
-        }
+            val srcRect = Rect(0, 0, photoW, photoH)
+            val dstRect = Rect(sideMargin, sideMargin, sideMargin + photoW, sideMargin + photoH)
+            canvas.drawBitmap(rawBitmap, srcRect, dstRect, photoPaint)
 
-        outputFile.parentFile?.mkdirs()
-        outputFile.outputStream().use { frameBitmap.compress(Bitmap.CompressFormat.JPEG, 90, it) }
-        frameBitmap.recycle()
+            // Caption text centred in the bottom margin
+            if (caption.isNotEmpty()) {
+                val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                    color = android.graphics.Color.BLACK
+                    textSize = frameW * CAPTION_TEXT_SIZE_RATIO
+                    textAlign = Paint.Align.CENTER
+                    typeface = Typeface.MONOSPACE   // TODO DAI-22: custom font
+                }
+                // Baseline y: centre of the bottom margin, shifted up by half the cap-height
+                val captionY = (sideMargin + photoH) + bottomMargin / 2f + textPaint.textSize * 0.35f
+                canvas.drawText(caption, frameW / 2f, captionY, textPaint)
+            }
+
+            outputFile.parentFile?.mkdirs()
+            outputFile.outputStream().use { frameBitmap.compress(Bitmap.CompressFormat.JPEG, 90, it) }
+        } finally {
+            frameBitmap.recycle()
+        }
     }
 
     /** Returns the [ColorMatrix] for [filterId], or null for no-op (null / "none"). */

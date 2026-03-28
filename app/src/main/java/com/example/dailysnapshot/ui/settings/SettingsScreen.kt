@@ -70,23 +70,26 @@ fun SettingsScreen(
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
-    // Derived permission state — recomputed on every resume tick.
-    @Suppress("UNUSED_EXPRESSION") permissionCheckTick
-    val permissionGranted = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        ContextCompat.checkSelfPermission(
-            context, Manifest.permission.POST_NOTIFICATIONS
-        ) == PackageManager.PERMISSION_GRANTED
-    } else true
+    // Derived permission state — recomputed whenever permissionCheckTick changes (on every resume).
+    val permissionGranted = remember(permissionCheckTick) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ContextCompat.checkSelfPermission(
+                context, Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+        } else true
+    }
 
     // True when the system dialog can no longer be shown (user selected "Don't ask again"
     // or denied twice depending on OS version). Only reachable after at least one request.
-    val permanentlyDenied = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
-        && !permissionGranted
-        && uiState.hasRequestedNotificationPermission
-        && activity != null
-        && !ActivityCompat.shouldShowRequestPermissionRationale(
-            activity, Manifest.permission.POST_NOTIFICATIONS
-        )
+    val permanentlyDenied = remember(permissionCheckTick, uiState.hasRequestedNotificationPermission) {
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+            && !permissionGranted
+            && uiState.hasRequestedNotificationPermission
+            && activity != null
+            && !ActivityCompat.shouldShowRequestPermissionRationale(
+                activity, Manifest.permission.POST_NOTIFICATIONS
+            )
+    }
 
     val permissionLauncher = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         rememberLauncherForActivityResult(

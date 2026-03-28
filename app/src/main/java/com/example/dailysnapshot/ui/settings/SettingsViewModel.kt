@@ -43,8 +43,9 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             settingsRepository.setReminderEnabled(enabled)
             if (enabled) {
-                val state = uiState.value
-                reminderScheduler.schedule(state.reminderHour, state.reminderMinute)
+                val hour = settingsRepository.reminderHour.first()
+                val minute = settingsRepository.reminderMinute.first()
+                reminderScheduler.schedule(hour, minute)
             } else {
                 reminderScheduler.cancel()
             }
