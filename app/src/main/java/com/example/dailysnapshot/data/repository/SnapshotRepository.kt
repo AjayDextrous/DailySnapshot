@@ -148,6 +148,22 @@ class SnapshotRepository @Inject constructor(
         dao.delete(snapshot.toEntity())
     }
 
+    /** Removes only the DB row; leaves image files on disk (for undo support). */
+    suspend fun softDeleteSnapshot(snapshot: Snapshot) {
+        dao.delete(snapshot.toEntity())
+    }
+
+    /** Re-inserts a previously soft-deleted snapshot with its original ID preserved. */
+    suspend fun undoDeleteSnapshot(snapshot: Snapshot) {
+        dao.insert(snapshot.toEntity())
+    }
+
+    /** Deletes the image files for a snapshot without touching the DB. */
+    suspend fun deleteSnapshotFiles(snapshot: Snapshot) {
+        File(snapshot.imagePath).delete()
+        snapshot.rawImagePath?.let { File(it).delete() }
+    }
+
     private fun rawFile(uuid: String) =
         File(context.filesDir, "snapshots/raw/$uuid.jpg")
 
