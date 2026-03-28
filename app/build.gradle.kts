@@ -106,6 +106,9 @@ dependencies {
     // DataStore Preferences
     implementation(libs.androidx.datastore.preferences)
 
+    // Workaround: See : https://github.com/google/ExoPlayer/issues/7993
+    implementation(libs.guava)
+
     // Unit tests
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.mockk)
