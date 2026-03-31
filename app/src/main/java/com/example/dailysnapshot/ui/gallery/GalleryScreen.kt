@@ -1,6 +1,8 @@
 package com.example.dailysnapshot.ui.gallery
 
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.draw.rotate
+import kotlin.random.Random
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -145,15 +147,25 @@ private fun SnapshotGrid(
     }
 }
 
+/** Maximum tilt angle (degrees) in either direction for the scattered-photos effect. */
+private const val MAX_ITEM_ROTATION_DEGREES = 12f
+
 @Composable
 private fun SnapshotGridItem(
     snapshot: Snapshot,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    // Derive a stable rotation from the snapshot ID so it survives recomposition and
+    // scroll recycling. Sign alternates with ID parity to guarantee a mix of CW/CCW.
+    val rotation = remember(snapshot.id) {
+        (Random(snapshot.id).nextFloat() * 2 - 1) * MAX_ITEM_ROTATION_DEGREES
+    }
+
     Box(
         modifier = modifier
             .fillMaxWidth()
+            .rotate(rotation)
             .shadow(elevation = 4.dp)
             .background(Color(0xFFFAFAF8))
             .clickable(onClick = onClick)
