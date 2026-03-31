@@ -1,5 +1,6 @@
 package com.example.dailysnapshot.util
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import androidx.core.graphics.createBitmap
@@ -7,7 +8,14 @@ import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
 import android.graphics.Paint
 import android.graphics.Rect
+import android.text.TextPaint
 import android.graphics.Typeface
+import android.text.Layout
+import android.text.StaticLayout
+import android.text.TextUtils
+import androidx.core.content.res.ResourcesCompat
+import com.example.dailysnapshot.R
+import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -20,12 +28,15 @@ import javax.inject.Singleton
  *  - Bottom margin:             [BOTTOM_MARGIN_RATIO] × photo height
  *
  * All methods are CPU-bound; callers must dispatch to a background thread.
- *
- * TODO DAI-22: replace Typeface.MONOSPACE with a custom typewriter/handwritten font.
- * TODO DAI-21: refine with near-white (#FAFAF8) background and MaskFilter drop shadow.
  */
 @Singleton
-class ImageProcessor @Inject constructor() {
+class ImageProcessor @Inject constructor(
+    @ApplicationContext private val context: Context
+) {
+
+    private val captionTypeface: Typeface? by lazy {
+        ResourcesCompat.getFont(context, R.font.special_elite)
+    }
 
     /**
      * Composites [rawBitmap] into a Polaroid frame and writes the result as a JPEG to [outputFile].
@@ -54,8 +65,8 @@ class ImageProcessor @Inject constructor() {
         try {
             val canvas = Canvas(frameBitmap)
 
-            // White Polaroid background
-            canvas.drawColor(android.graphics.Color.WHITE)
+            // Near-white paper background (#FAFAF8) — mimics aged Polaroid paper
+            canvas.drawColor(android.graphics.Color.parseColor("#FAFAF8"))
 
             // Photo with optional ColorMatrix filter
             val photoPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -66,17 +77,27 @@ class ImageProcessor @Inject constructor() {
             val dstRect = Rect(sideMargin, sideMargin, sideMargin + photoW, sideMargin + photoH)
             canvas.drawBitmap(rawBitmap, srcRect, dstRect, photoPaint)
 
-            // Caption text centred in the bottom margin
+            // Caption text centred in the bottom margin, max 2 lines with ellipsis
             if (caption.isNotEmpty()) {
-                val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                    color = android.graphics.Color.BLACK
+                val textPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
+                    color = android.graphics.Color.parseColor("#333333")
                     textSize = frameW * CAPTION_TEXT_SIZE_RATIO
-                    textAlign = Paint.Align.CENTER
-                    typeface = Typeface.MONOSPACE   // TODO DAI-22: custom font
+                    typeface = captionTypeface ?: Typeface.MONOSPACE
                 }
-                // Baseline y: centre of the bottom margin, shifted up by half the cap-height
-                val captionY = (sideMargin + photoH) + bottomMargin / 2f + textPaint.textSize * 0.35f
-                canvas.drawText(caption, frameW / 2f, captionY, textPaint)
+                val maxTextWidth = (frameW * 0.85f).toInt()
+                val layout = StaticLayout.Builder
+                    .obtain(caption, 0, caption.length, textPaint, maxTextWidth)
+                    .setAlignment(Layout.Alignment.ALIGN_CENTER)
+                    .setMaxLines(2)
+                    .setEllipsize(TextUtils.TruncateAt.END)
+                    .build()
+                val captionAreaTop = (sideMargin + photoH).toFloat()
+                val textTop = captionAreaTop + (bottomMargin - layout.height) / 2f
+                val textLeft = (frameW - maxTextWidth) / 2f
+                canvas.save()
+                canvas.translate(textLeft, textTop)
+                layout.draw(canvas)
+                canvas.restore()
             }
 
             outputFile.parentFile?.mkdirs()

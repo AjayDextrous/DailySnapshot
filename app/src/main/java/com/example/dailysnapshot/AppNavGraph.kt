@@ -11,6 +11,7 @@ import com.example.dailysnapshot.ui.camera.CameraScreen
 import com.example.dailysnapshot.ui.detail.DetailScreen
 import com.example.dailysnapshot.ui.edit.EditScreen
 import com.example.dailysnapshot.ui.gallery.GalleryScreen
+import com.example.dailysnapshot.ui.licenses.LicensesScreen
 import com.example.dailysnapshot.ui.settings.SettingsScreen
 import kotlinx.serialization.Serializable
 
@@ -21,6 +22,7 @@ sealed interface Screen {
     @Serializable data class Edit(val rawFilePath: String, val snapshotId: Long = -1L) : Screen
     @Serializable data class Detail(val snapshotId: Long) : Screen
     @Serializable data object Settings : Screen
+    @Serializable data object Licenses : Screen
 }
 
 @Composable
@@ -78,7 +80,14 @@ fun AppNavGraph(navController: NavHostController = rememberNavController()) {
         }
 
         composable<Screen.Settings> {
-            SettingsScreen(onNavigateBack = { navController.popBackStack() })
+            SettingsScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onOpenLicenses = { navController.navigate(Screen.Licenses) }
+            )
+        }
+
+        composable<Screen.Licenses> {
+            LicensesScreen(onNavigateBack = { navController.popBackStack() })
         }
     }
 }
