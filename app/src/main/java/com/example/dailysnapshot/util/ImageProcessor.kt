@@ -4,6 +4,8 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import androidx.core.graphics.createBitmap
+import androidx.core.graphics.toColorInt
+import androidx.core.graphics.withTranslation
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
 import android.graphics.Paint
@@ -66,7 +68,7 @@ class ImageProcessor @Inject constructor(
             val canvas = Canvas(frameBitmap)
 
             // Near-white paper background (#FAFAF8) — mimics aged Polaroid paper
-            canvas.drawColor(android.graphics.Color.parseColor("#FAFAF8"))
+            canvas.drawColor("#FAFAF8".toColorInt())
 
             // Photo with optional ColorMatrix filter
             val photoPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -80,7 +82,7 @@ class ImageProcessor @Inject constructor(
             // Caption text centred in the bottom margin, max 2 lines with ellipsis
             if (caption.isNotEmpty()) {
                 val textPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
-                    color = android.graphics.Color.parseColor("#333333")
+                    color = "#333333".toColorInt()
                     textSize = frameW * CAPTION_TEXT_SIZE_RATIO
                     typeface = captionTypeface ?: Typeface.MONOSPACE
                 }
@@ -94,10 +96,7 @@ class ImageProcessor @Inject constructor(
                 val captionAreaTop = (sideMargin + photoH).toFloat()
                 val textTop = captionAreaTop + (bottomMargin - layout.height) / 2f
                 val textLeft = (frameW - maxTextWidth) / 2f
-                canvas.save()
-                canvas.translate(textLeft, textTop)
-                layout.draw(canvas)
-                canvas.restore()
+                canvas.withTranslation(textLeft, textTop) { layout.draw(this) }
             }
 
             outputFile.parentFile?.mkdirs()
