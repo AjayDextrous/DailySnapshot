@@ -27,6 +27,7 @@ import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 import androidx.core.graphics.scale
 import androidx.core.graphics.createBitmap
+import com.example.dailysnapshot.util.centerCrop
 
 @HiltViewModel
 class EditViewModel @Inject constructor(
@@ -132,7 +133,7 @@ class EditViewModel @Inject constructor(
         opts.inJustDecodeBounds = false
 
         val raw = BitmapFactory.decodeFile(rawFilePath, opts) ?: return@withContext
-        val bitmap = correctExifOrientation(rawFilePath, raw)
+        val bitmap = centerCrop(correctExifOrientation(rawFilePath, raw))
 
         val thumbSize = 80
         val thumb = bitmap.scale(thumbSize, thumbSize)
@@ -231,7 +232,7 @@ class EditViewModel @Inject constructor(
                 } else {
                     // Reload full-res bitmap for saving; apply EXIF correction as on preview load
                     val raw = BitmapFactory.decodeFile(rawFilePath)
-                    val saveBitmap = if (raw != null) correctExifOrientation(rawFilePath, raw)
+                    val saveBitmap = if (raw != null) centerCrop(correctExifOrientation(rawFilePath, raw))
                                      else state.previewBitmap
                     repository.saveSnapshot(
                         rawBitmap = saveBitmap,

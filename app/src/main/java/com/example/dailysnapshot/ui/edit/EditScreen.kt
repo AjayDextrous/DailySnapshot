@@ -51,7 +51,9 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import com.example.dailysnapshot.R
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
@@ -188,7 +190,7 @@ private fun PolaroidPreview(
     Box(
         modifier = modifier
             .shadow(elevation = 8.dp)
-            .background(Color.White),
+            .background(Color(0xFFFAFAF8)),
         contentAlignment = Alignment.Center
     ) {
         if (bitmap != null) {
@@ -218,9 +220,9 @@ private fun PolaroidPreview(
                         Text(
                             text = caption,
                             style = MaterialTheme.typography.bodySmall.copy(
-                                fontFamily = FontFamily.Monospace
+                                fontFamily = FontFamily(Font(R.font.special_elite))
                             ),
-                            color = Color.Black,
+                            color = Color(0xFF333333),
                             textAlign = TextAlign.Center,
                             maxLines = 2,
                             overflow = TextOverflow.Ellipsis,

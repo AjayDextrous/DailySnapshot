@@ -1,12 +1,15 @@
 package com.example.dailysnapshot.ui.gallery
 
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.draw.rotate
+import kotlin.random.Random
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -36,7 +39,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.background
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -142,21 +147,36 @@ private fun SnapshotGrid(
     }
 }
 
+/** Maximum tilt angle (degrees) in either direction for the scattered-photos effect. */
+private const val MAX_ITEM_ROTATION_DEGREES = 12f
+
 @Composable
 private fun SnapshotGridItem(
     snapshot: Snapshot,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    AsyncImage(
-        model = File(snapshot.imagePath),
-        contentDescription = snapshot.caption.ifEmpty { "Snapshot from ${snapshot.date}" },
-        contentScale = ContentScale.Crop,
+    // Derive a stable rotation from the snapshot ID so it survives recomposition and
+    // scroll recycling. Sign alternates with ID parity to guarantee a mix of CW/CCW.
+    val rotation = remember(snapshot.id) {
+        (Random(snapshot.id).nextFloat() * 2 - 1) * MAX_ITEM_ROTATION_DEGREES
+    }
+
+    Box(
         modifier = modifier
-            .aspectRatio(0.82f)
+            .fillMaxWidth()
+            .rotate(rotation)
             .shadow(elevation = 4.dp)
+            .background(Color(0xFFFAFAF8))
             .clickable(onClick = onClick)
-    )
+    ) {
+        AsyncImage(
+            model = File(snapshot.imagePath),
+            contentDescription = snapshot.caption.ifEmpty { "Snapshot from ${snapshot.date}" },
+            contentScale = ContentScale.Fit,
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
 }
 
 @Composable
