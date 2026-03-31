@@ -27,6 +27,7 @@ import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 import androidx.core.graphics.scale
 import androidx.core.graphics.createBitmap
+import com.example.dailysnapshot.util.centerCrop
 
 @HiltViewModel
 class EditViewModel @Inject constructor(
@@ -263,21 +264,6 @@ class EditViewModel @Inject constructor(
     fun onDiscardConfirmed() {
         _uiState.update { it.copy(showDiscardDialog = false) }
         discardAndNavigateBack()
-    }
-
-    /**
-     * Crops [bitmap] to a centered square using the shorter dimension.
-     * The source bitmap is recycled if a new bitmap had to be created.
-     * TODO DAI-37: replace with user-selected crop once the crop screen is implemented.
-     */
-    private fun centerCrop(bitmap: Bitmap): Bitmap {
-        val side = minOf(bitmap.width, bitmap.height)
-        if (bitmap.width == side && bitmap.height == side) return bitmap
-        val x = (bitmap.width - side) / 2
-        val y = (bitmap.height - side) / 2
-        val cropped = Bitmap.createBitmap(bitmap, x, y, side, side)
-        bitmap.recycle()
-        return cropped
     }
 
     private fun discardAndNavigateBack() {
