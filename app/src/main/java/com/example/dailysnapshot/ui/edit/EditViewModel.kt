@@ -132,7 +132,7 @@ class EditViewModel @Inject constructor(
         opts.inJustDecodeBounds = false
 
         val raw = BitmapFactory.decodeFile(rawFilePath, opts) ?: return@withContext
-        val bitmap = correctExifOrientation(rawFilePath, raw)
+        val bitmap = centerCrop(correctExifOrientation(rawFilePath, raw))
 
         val thumbSize = 80
         val thumb = bitmap.scale(thumbSize, thumbSize)
@@ -231,7 +231,7 @@ class EditViewModel @Inject constructor(
                 } else {
                     // Reload full-res bitmap for saving; apply EXIF correction as on preview load
                     val raw = BitmapFactory.decodeFile(rawFilePath)
-                    val saveBitmap = if (raw != null) correctExifOrientation(rawFilePath, raw)
+                    val saveBitmap = if (raw != null) centerCrop(correctExifOrientation(rawFilePath, raw))
                                      else state.previewBitmap
                     repository.saveSnapshot(
                         rawBitmap = saveBitmap,
@@ -263,6 +263,21 @@ class EditViewModel @Inject constructor(
     fun onDiscardConfirmed() {
         _uiState.update { it.copy(showDiscardDialog = false) }
         discardAndNavigateBack()
+    }
+
+    /**
+     * Crops [bitmap] to a centered square using the shorter dimension.
+     * The source bitmap is recycled if a new bitmap had to be created.
+     * TODO DAI-37: replace with user-selected crop once the crop screen is implemented.
+     */
+    private fun centerCrop(bitmap: Bitmap): Bitmap {
+        val side = minOf(bitmap.width, bitmap.height)
+        if (bitmap.width == side && bitmap.height == side) return bitmap
+        val x = (bitmap.width - side) / 2
+        val y = (bitmap.height - side) / 2
+        val cropped = Bitmap.createBitmap(bitmap, x, y, side, side)
+        bitmap.recycle()
+        return cropped
     }
 
     private fun discardAndNavigateBack() {
